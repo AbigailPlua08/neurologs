@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -25,10 +25,10 @@ import {
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useChildren } from '@/hooks/use-children';
 import { useLogs } from '@/hooks/use-logs';
-import type { 
+import type {
   ChildWithRelation
 } from '@/types';
-import { 
+import {
   EditIcon,
   MoreVerticalIcon,
   UserPlusIcon,
@@ -55,11 +55,11 @@ export default function ChildDetailPage() {
   const params = useParams();
   const router = useRouter();
   const childId = params.id as string;
-  
+
   // Eliminamos la asignación no utilizada de user
-  const { children, loading: childLoading, getChildById } = useChildren();
-  const { logs, loading: logsLoading, stats } = useLogs({ childId });
-  
+  const { loading: childLoading, getChildById } = useChildren();
+  const { logs } = useLogs({ childId });
+
   const [child, setChild] = useState<ChildWithRelation | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -129,12 +129,12 @@ export default function ChildDetailPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{child.name}</h1>
             <p className="text-gray-600">
-              {child.birth_date && `${calculateAge(child.birth_date)} años`} • 
+              {child.birth_date && `${calculateAge(child.birth_date)} años`} •
               Creado {format(new Date(child.created_at), 'dd MMM yyyy', { locale: es })}
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm">
             <DownloadIcon className="h-4 w-4 mr-2" />
@@ -184,7 +184,7 @@ export default function ChildDetailPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -196,7 +196,7 @@ export default function ChildDetailPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -208,7 +208,7 @@ export default function ChildDetailPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -220,7 +220,7 @@ export default function ChildDetailPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -232,7 +232,7 @@ export default function ChildDetailPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -281,19 +281,19 @@ export default function ChildDetailPage() {
                         <h3 className="text-lg font-semibold text-gray-900">{child.name}</h3>
                         {child.birth_date && (
                           <p className="text-gray-600">
-                            Nacido el {format(new Date(child.birth_date), 'dd MMMM yyyy', { locale: es })} 
+                            Nacido el {format(new Date(child.birth_date), 'dd MMMM yyyy', { locale: es })}
                             ({calculateAge(child.birth_date)} años)
                           </p>
                         )}
                       </div>
-                      
+
                       {child.diagnosis && (
                         <div>
                           <h4 className="text-sm font-medium text-gray-900">Diagnóstico</h4>
                           <p className="text-sm text-gray-600">{child.diagnosis}</p>
                         </div>
                       )}
-                      
+
                       {child.notes && (
                         <div>
                           <h4 className="text-sm font-medium text-gray-900">Notas adicionales</h4>
@@ -321,7 +321,7 @@ export default function ChildDetailPage() {
                 <CardContent>
                   {logs.slice(0, 5).map((log) => (
                     <div key={log.id} className="flex items-start space-x-3 py-3 border-b border-gray-100 last:border-0">
-                      <div 
+                      <div
                         className="w-3 h-3 rounded-full mt-2"
                         style={{ backgroundColor: log.category?.color }}
                       />
@@ -360,7 +360,7 @@ export default function ChildDetailPage() {
                       </div>
                     </div>
                   ))}
-                  
+
                   {logs.length === 0 && (
                     <div className="text-center py-8">
                       <BookOpenIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
@@ -397,8 +397,8 @@ export default function ChildDetailPage() {
                           <p className="text-sm font-medium text-gray-900">
                             {relation.user_name || relation.user_email}
                           </p>
-                          <Badge 
-                            variant="secondary" 
+                          <Badge
+                            variant="secondary"
                             className={`text-xs ${getRelationshipColor(relation.relationship_type)}`}
                           >
                             {relation.relationship_type === 'parent' && 'Padre/Madre'}
@@ -423,7 +423,7 @@ export default function ChildDetailPage() {
                       </div>
                     </div>
                   ))}
-                  
+
                   <Separator />
                   <Button variant="outline" size="sm" className="w-full">
                     <UserPlusIcon className="h-4 w-4 mr-2" />
