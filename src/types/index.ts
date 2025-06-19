@@ -55,6 +55,7 @@ export interface ProfileUpdate {
 // ================================================================
 
 export interface EmergencyContact {
+  id: number;
   name: string;
   phone: string;
   relationship: string;
@@ -84,7 +85,7 @@ export interface PrivacySettings {
 }
 
 export interface Child {
-  id: string;
+  id: number;
   name: string;
   birth_date?: string | null;
   diagnosis?: string | null;

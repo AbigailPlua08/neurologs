@@ -138,7 +138,7 @@ export async function uploadFile(
   path?: string
 ): Promise<{ url: string; path: string }> {
   const supabase = createClient()
-  const fileName = path || `${Date.now()}-${file.name}`
+  const fileName = path ?? `${Date.now()}-${file.name}`
   
   const { data, error } = await supabase.storage
     .from(STORAGE_BUCKETS[bucket])

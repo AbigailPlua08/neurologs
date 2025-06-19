@@ -3,11 +3,11 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { number, z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,25 +16,24 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
 } from '@/components/ui/form';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useChildren } from '@/hooks/use-children';
-import { uploadFile, getPublicUrl, STORAGE_BUCKETS } from '@/lib/supabase';
+import { uploadFile, getPublicUrl } from '@/lib/supabase';
 import type { Child, ChildInsert, ChildUpdate, EmergencyContact } from '@/types';
-import { 
-  CalendarIcon, 
-  ImageIcon, 
-  PlusIcon, 
-  TrashIcon, 
-  SaveIcon, 
+import {
+  ImageIcon,
+  PlusIcon,
+  TrashIcon,
+  SaveIcon,
   UserIcon,
   PhoneIcon,
   HeartIcon,
@@ -89,20 +88,20 @@ type ChildFormData = z.infer<typeof childFormSchema>;
 // ================================================================
 
 interface ChildFormProps {
-  child?: Child;
-  mode: 'create' | 'edit';
-  onSuccess?: (child: Child) => void;
-  onCancel?: () => void;
+  readonly child?: Child;
+  readonly mode: 'create' | 'edit';
+  readonly onSuccess?: (child: Child) => void;
+  readonly onCancel?: () => void;
 }
 
 interface EmergencyContactFormProps {
-  contacts: EmergencyContact[];
-  onChange: (contacts: EmergencyContact[]) => void;
+  readonly contacts: EmergencyContact[];
+  readonly onChange: (contacts: EmergencyContact[]) => void;
 }
 
 interface MedicalInfoFormProps {
-  medicalInfo: any;
-  onChange: (info: any) => void;
+  readonly medicalInfo: any;
+  readonly onChange: (info: any) => void;
 }
 
 interface EducationalInfoFormProps {
@@ -122,6 +121,7 @@ interface PrivacySettingsFormProps {
 function EmergencyContactForm({ contacts, onChange }: EmergencyContactFormProps) {
   const addContact = () => {
     onChange([...contacts, {
+      id: 0,
       name: '',
       phone: '',
       relationship: '',
@@ -135,7 +135,7 @@ function EmergencyContactForm({ contacts, onChange }: EmergencyContactFormProps)
   };
 
   const updateContact = (index: number, field: keyof EmergencyContact, value: any) => {
-    const newContacts = contacts.map((contact, i) => 
+    const newContacts = contacts.map((contact, i) =>
       i === index ? { ...contact, [field]: value } : contact
     );
     onChange(newContacts);
@@ -156,54 +156,54 @@ function EmergencyContactForm({ contacts, onChange }: EmergencyContactFormProps)
         </Button>
       </div>
 
-      {contacts.map((contact, index) => (
-        <Card key={index} className="p-4">
+      {contacts.map((contact) => (
+        <Card key={contact.relationship} className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor={`contact-name-${index}`}>Nombre</Label>
+              <Label htmlFor={`contact-name-${contact.relationship}`}>Nombre</Label>
               <Input
-                id={`contact-name-${index}`}
-                value={contact.name}
-                onChange={(e) => updateContact(index, 'name', e.target.value)}
+                id={`contact-name-${contact.relationship}`}
+                value={contact.id}
+                onChange={(e) => updateContact(contact.id, 'name', e.target.value)}
                 placeholder="Nombre completo"
               />
             </div>
-            
+
             <div>
-              <Label htmlFor={`contact-phone-${index}`}>Teléfono</Label>
+              <Label htmlFor={`contact-phone-${contact.id}`}>Teléfono</Label>
               <Input
-                id={`contact-phone-${index}`}
+                id={`contact-phone-${contact.id}`}
                 value={contact.phone}
-                onChange={(e) => updateContact(index, 'phone', e.target.value)}
+                onChange={(e) => updateContact(contact.id, 'phone', e.target.value)}
                 placeholder="+1234567890"
               />
             </div>
-            
+
             <div>
-              <Label htmlFor={`contact-relationship-${index}`}>Relación</Label>
+              <Label htmlFor={`contact-relationship-${contact.id}`}>Relación</Label>
               <Input
-                id={`contact-relationship-${index}`}
+                id={`contact-relationship-${contact.id}`}
                 value={contact.relationship}
-                onChange={(e) => updateContact(index, 'relationship', e.target.value)}
+                onChange={(e) => updateContact(contact.id, 'relationship', e.target.value)}
                 placeholder="Padre, Madre, Tutor, etc."
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Switch
-                  id={`contact-primary-${index}`}
+                  id={`contact-primary-${contact.id}`}
                   checked={contact.is_primary}
-                  onCheckedChange={(checked) => updateContact(index, 'is_primary', checked)}
+                  onCheckedChange={(checked) => updateContact(contact.id, 'is_primary', checked)}
                 />
-                <Label htmlFor={`contact-primary-${index}`}>Contacto Principal</Label>
+                <Label htmlFor={`contact-primary-${contact.id}`}>Contacto Principal</Label>
               </div>
-              
+
               <Button
                 type="button"
                 variant="destructive"
                 size="sm"
-                onClick={() => removeContact(index)}
+                onClick={() => removeContact(contact.id)}
               >
                 <TrashIcon className="h-4 w-4" />
               </Button>
@@ -230,7 +230,7 @@ function MedicalInfoForm({ medicalInfo, onChange }: MedicalInfoFormProps) {
 
   const addItem = (field: string, value: string, setter: (value: string) => void) => {
     if (value.trim()) {
-      const currentItems = medicalInfo[field] || [];
+      const currentItems = medicalInfo[field] ?? [];
       onChange({
         ...medicalInfo,
         [field]: [...currentItems, value.trim()]
@@ -240,7 +240,7 @@ function MedicalInfoForm({ medicalInfo, onChange }: MedicalInfoFormProps) {
   };
 
   const removeItem = (field: string, index: number) => {
-    const currentItems = medicalInfo[field] || [];
+    const currentItems = medicalInfo[field] ?? [];
     onChange({
       ...medicalInfo,
       [field]: currentItems.filter((_: any, i: number) => i !== index)
@@ -250,8 +250,8 @@ function MedicalInfoForm({ medicalInfo, onChange }: MedicalInfoFormProps) {
   const ItemsList = ({ field, items, placeholder }: { field: string, items: string[], placeholder: string }) => (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
-        {items.map((item, index) => (
-          <Badge key={index} variant="secondary" className="text-sm">
+        {items.map((item) => (
+          <Badge key={item} variant="secondary" className="text-sm">
             {item}
             <Button
               type="button"
@@ -265,7 +265,7 @@ function MedicalInfoForm({ medicalInfo, onChange }: MedicalInfoFormProps) {
           </Badge>
         ))}
       </div>
-      
+
       <div className="flex space-x-2">
         <Input
           placeholder={placeholder}
@@ -307,28 +307,28 @@ function MedicalInfoForm({ medicalInfo, onChange }: MedicalInfoFormProps) {
           <HeartIcon className="h-4 w-4 inline mr-2" />
           Alergias
         </Label>
-        <ItemsList 
-          field="allergies" 
-          items={medicalInfo.allergies || []} 
-          placeholder="Agregar alergia..." 
+        <ItemsList
+          field="allergies"
+          items={medicalInfo.allergies ?? []}
+          placeholder="Agregar alergia..."
         />
       </div>
 
       <div>
         <Label className="text-base font-medium mb-3 block">Medicamentos</Label>
-        <ItemsList 
-          field="medications" 
-          items={medicalInfo.medications || []} 
-          placeholder="Agregar medicamento..." 
+        <ItemsList
+          field="medications"
+          items={medicalInfo.medications ?? []}
+          placeholder="Agregar medicamento..."
         />
       </div>
 
       <div>
         <Label className="text-base font-medium mb-3 block">Condiciones Médicas</Label>
-        <ItemsList 
-          field="conditions" 
-          items={medicalInfo.conditions || []} 
-          placeholder="Agregar condición..." 
+        <ItemsList
+          field="conditions"
+          items={medicalInfo.conditions ?? []}
+          placeholder="Agregar condición..."
         />
       </div>
 
@@ -336,7 +336,7 @@ function MedicalInfoForm({ medicalInfo, onChange }: MedicalInfoFormProps) {
         <Label htmlFor="emergency-notes">Notas de Emergencia</Label>
         <Textarea
           id="emergency-notes"
-          value={medicalInfo.emergency_notes || ''}
+          value={medicalInfo.emergency_notes ?? ''}
           onChange={(e) => onChange({
             ...medicalInfo,
             emergency_notes: e.target.value
@@ -355,7 +355,7 @@ function EducationalInfoForm({ educationalInfo, onChange }: EducationalInfoFormP
 
   const addItem = (field: string, value: string, setter: (value: string) => void) => {
     if (value.trim()) {
-      const currentItems = educationalInfo[field] || [];
+      const currentItems = educationalInfo[field] ?? [];
       onChange({
         ...educationalInfo,
         [field]: [...currentItems, value.trim()]
@@ -365,7 +365,7 @@ function EducationalInfoForm({ educationalInfo, onChange }: EducationalInfoFormP
   };
 
   const removeItem = (field: string, index: number) => {
-    const currentItems = educationalInfo[field] || [];
+    const currentItems = educationalInfo[field] ?? [];
     onChange({
       ...educationalInfo,
       [field]: currentItems.filter((_: any, i: number) => i !== index)
@@ -379,7 +379,7 @@ function EducationalInfoForm({ educationalInfo, onChange }: EducationalInfoFormP
           <Label htmlFor="school">Institución Educativa</Label>
           <Input
             id="school"
-            value={educationalInfo.school || ''}
+            value={educationalInfo.school ?? ''}
             onChange={(e) => onChange({
               ...educationalInfo,
               school: e.target.value
@@ -392,7 +392,7 @@ function EducationalInfoForm({ educationalInfo, onChange }: EducationalInfoFormP
           <Label htmlFor="grade">Grado/Nivel</Label>
           <Input
             id="grade"
-            value={educationalInfo.grade || ''}
+            value={educationalInfo.grade ?? ''}
             onChange={(e) => onChange({
               ...educationalInfo,
               grade: e.target.value
@@ -406,7 +406,7 @@ function EducationalInfoForm({ educationalInfo, onChange }: EducationalInfoFormP
         <Label htmlFor="teacher">Docente Principal</Label>
         <Input
           id="teacher"
-          value={educationalInfo.teacher || ''}
+          value={educationalInfo.teacher ?? ''}
           onChange={(e) => onChange({
             ...educationalInfo,
             teacher: e.target.value
@@ -422,7 +422,7 @@ function EducationalInfoForm({ educationalInfo, onChange }: EducationalInfoFormP
         </Label>
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
-            {(educationalInfo.iep_goals || []).map((goal: string, index: number) => (
+            {(educationalInfo.iep_goals ?? []).map((goal: string, index: number) => (
               <Badge key={index} variant="secondary" className="text-sm">
                 {goal}
                 <Button
@@ -437,7 +437,7 @@ function EducationalInfoForm({ educationalInfo, onChange }: EducationalInfoFormP
               </Badge>
             ))}
           </div>
-          
+
           <div className="flex space-x-2">
             <Input
               placeholder="Agregar objetivo IEP..."
@@ -466,7 +466,7 @@ function EducationalInfoForm({ educationalInfo, onChange }: EducationalInfoFormP
         <Label className="text-base font-medium mb-3 block">Acomodaciones</Label>
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
-            {(educationalInfo.accommodations || []).map((accommodation: string, index: number) => (
+            {(educationalInfo.accommodations ?? []).map((accommodation: string, index: number) => (
               <Badge key={index} variant="secondary" className="text-sm">
                 {accommodation}
                 <Button
@@ -481,7 +481,7 @@ function EducationalInfoForm({ educationalInfo, onChange }: EducationalInfoFormP
               </Badge>
             ))}
           </div>
-          
+
           <div className="flex space-x-2">
             <Input
               placeholder="Agregar acomodación..."
@@ -572,7 +572,7 @@ function PrivacySettingsForm({ settings, onChange }: PrivacySettingsFormProps) {
           value={settings.data_retention_months}
           onChange={(e) => onChange({
             ...settings,
-            data_retention_months: parseInt(e.target.value) || 24
+            data_retention_months: parseInt(e.target.value) ?? 24
           })}
         />
         <p className="text-sm text-gray-600 mt-1">
@@ -597,26 +597,26 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
   const form = useForm<ChildFormData>({
     resolver: zodResolver(childFormSchema),
     defaultValues: {
-      name: child?.name || '',
-      birth_date: child?.birth_date || '',
-      diagnosis: child?.diagnosis || '',
-      notes: child?.notes || '',
-      avatar_url: child?.avatar_url || '',
-      emergency_contact: child?.emergency_contact || [],
-      medical_info: child?.medical_info || {
+      name: child?.name ?? '',
+      birth_date: child?.birth_date ?? '',
+      diagnosis: child?.diagnosis ?? '',
+      notes: child?.notes ?? '',
+      avatar_url: child?.avatar_url ?? '',
+      emergency_contact: child?.emergency_contact ?? [],
+      medical_info: child?.medical_info ?? {
         allergies: [],
         medications: [],
         conditions: [],
         emergency_notes: ''
       },
-      educational_info: child?.educational_info || {
+      educational_info: child?.educational_info ?? {
         school: '',
         grade: '',
         teacher: '',
         iep_goals: [],
         accommodations: []
       },
-      privacy_settings: child?.privacy_settings || {
+      privacy_settings: child?.privacy_settings ?? {
         share_with_specialists: true,
         share_progress_reports: true,
         allow_photo_sharing: false,
@@ -631,13 +631,15 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
 
     try {
       setUploading(true);
-      
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      
-      await uploadFile('avatars', fileName, file);
-      const url = getPublicUrl('avatars', fileName);
-      
+
+
+
+      await uploadFile('AVATARS', file, fileName);
+      const url = getPublicUrl('AVATARS', fileName);
+
       form.setValue('avatar_url', url);
     } catch (error) {
       console.error('Error uploading avatar:', error);
@@ -649,7 +651,7 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
   const onSubmit = async (data: ChildFormData) => {
     try {
       let result: Child;
-      
+
       if (mode === 'create') {
         result = await createChild(data as ChildInsert);
       } else {
@@ -657,7 +659,7 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
       }
 
       onSuccess?.(result);
-      
+
       if (!onSuccess) {
         router.push(`/dashboard/children/${result.id}`);
       }
@@ -683,20 +685,20 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
             {mode === 'create' ? 'Agregar Niño' : 'Editar Niño'}
           </h1>
           <p className="text-gray-600 mt-1">
-            {mode === 'create' 
+            {mode === 'create'
               ? 'Completa la información para agregar un nuevo niño al seguimiento'
               : 'Actualiza la información del niño'
             }
           </p>
         </div>
-        
+
         <div className="flex space-x-3">
           {onCancel && (
             <Button variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
           )}
-          <Button 
+          <Button
             onClick={form.handleSubmit(onSubmit)}
             disabled={form.formState.isSubmitting}
           >
@@ -713,11 +715,10 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`${
-                activeTab === tab.id
+              className={`${activeTab === tab.id
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center`}
+                } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center`}
             >
               <tab.icon className="h-4 w-4 mr-2" />
               {tab.label}
@@ -742,15 +743,15 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
                 {/* Avatar Upload */}
                 <div className="flex items-center space-x-6">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage 
-                      src={form.watch('avatar_url')} 
+                    <AvatarImage
+                      src={form.watch('avatar_url')}
                       alt={form.watch('name')}
                     />
                     <AvatarFallback className="bg-blue-100 text-blue-600 text-2xl">
-                      {form.watch('name')?.charAt(0)?.toUpperCase() || 'N'}
+                      {form.watch('name')?.charAt(0)?.toUpperCase() ?? 'N'}
                     </AvatarFallback>
                   </Avatar>
-                  
+
                   <div>
                     <Label htmlFor="avatar-upload" className="cursor-pointer">
                       <div className="flex items-center space-x-2 text-sm text-blue-600 hover:text-blue-700">
@@ -795,10 +796,10 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
                     <FormItem>
                       <FormLabel>Fecha de Nacimiento</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="date" 
+                        <Input
+                          type="date"
                           max={format(new Date(), 'yyyy-MM-dd')}
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormDescription>
@@ -817,9 +818,9 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
                     <FormItem>
                       <FormLabel>Diagnóstico</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           placeholder="Diagnóstico principal o condición..."
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormDescription>
@@ -838,10 +839,10 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
                     <FormItem>
                       <FormLabel>Notas Adicionales</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Información adicional importante..."
                           rows={4}
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormDescription>
@@ -866,7 +867,10 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
               </CardHeader>
               <CardContent>
                 <EmergencyContactForm
-                  contacts={form.watch('emergency_contact')}
+                  contacts={form.watch('emergency_contact').map(contact => ({
+                    ...contact,
+                    id: contact.name ?? crypto.randomUUID(), // Genera un ID si no existe
+                  }))}
                   onChange={(contacts) => form.setValue('emergency_contact', contacts)}
                 />
               </CardContent>
@@ -930,23 +934,23 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
           {/* Form Actions */}
           <div className="flex justify-end space-x-4 pt-6 border-t">
             {onCancel && (
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={onCancel}
               >
                 Cancelar
               </Button>
             )}
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={form.formState.isSubmitting}
             >
               <SaveIcon className="mr-2 h-4 w-4" />
               {form.formState.isSubmitting
                 ? 'Guardando...'
-                : mode === 'create' 
-                  ? 'Crear Niño' 
+                : mode === 'create'
+                  ? 'Crear Niño'
                   : 'Guardar Cambios'
               }
             </Button>
