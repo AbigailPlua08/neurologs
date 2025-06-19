@@ -90,7 +90,7 @@ export interface Child {
   diagnosis?: string | null;
   notes?: string | null;
   is_active: boolean;
-  avatar_url?: string | null;
+  avatar_url?: string;
   emergency_contact: EmergencyContact[];
   medical_info: MedicalInfo;
   educational_info: EducationalInfo;
@@ -175,6 +175,14 @@ export interface ChildWithRelation extends Child {
   relation_created_at: string;
   relation_expires_at?: string | null;
   creator_name: string;
+  user_relations?: Array<{
+    user_id: string;
+    user_email: string;
+    user_name: string;
+    relationship_type: string;
+    can_edit: boolean;
+    can_export: boolean;
+  }>;
 }
 
 // ================================================================
