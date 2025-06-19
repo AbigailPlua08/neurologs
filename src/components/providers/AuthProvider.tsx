@@ -195,7 +195,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       // El perfil se cargará automáticamente por el listener
     } catch (err: any) {
       console.error('❌ Sign in error:', err);
-      setError(err.message || 'Error al iniciar sesión');
+      setError(err.message ?? 'Error al iniciar sesión');
       throw err;
     } finally {
       setLoading(false);
@@ -226,7 +226,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       if (error) throw error;
     } catch (err: any) {
       console.error('❌ Sign up error:', err);
-      setError(err.message || 'Error al registrarse');
+      setError(err.message ?? 'Error al registrarse');
       throw err;
     } finally {
       setLoading(false);
@@ -246,7 +246,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       setError(null);
     } catch (err: any) {
       console.error('❌ Sign out error:', err);
-      setError(err.message || 'Error al cerrar sesión');
+      setError(err.message ?? 'Error al cerrar sesión');
       throw err;
     } finally {
       setLoading(false);
@@ -271,7 +271,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       setUser(prev => prev ? { ...prev, ...updates } : null);
     } catch (err: any) {
       console.error('❌ Update profile error:', err);
-      setError(err.message || 'Error al actualizar perfil');
+      setError(err.message ?? 'Error al actualizar perfil');
       throw err;
     } finally {
       setLoading(false);
@@ -286,7 +286,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       if (error) throw error;
     } catch (err: any) {
       console.error('❌ Reset password error:', err);
-      setError(err.message || 'Error al enviar email de recuperación');
+      setError(err.message ?? 'Error al enviar email de recuperación');
       throw err;
     }
   }, [supabase]);
