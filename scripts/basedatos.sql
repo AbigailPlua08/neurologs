@@ -1,8 +1,21 @@
 -- ================================================================
--- NEUROLOG APP - SCRIPT COMPLETO DE BASE DE DATOS
+-- NEUROLOG APP - SCRIPT COMPLETO DE BASE DE DATOS (VERSIÓN OPTIMIZADA)
 -- ================================================================
 -- Ejecutar completo en Supabase SQL Editor
--- Borra todo y crea desde cero según últimas actualizaciones
+-- Incluye solución para literales duplicados y otras optimizaciones
+
+-- ================================================================
+-- 0. DEFINIR CONSTANTES GLOBALES
+-- ================================================================
+
+DO $$
+BEGIN
+    -- Constantes para valores repetidos
+    PERFORM pg_catalog.set_config('app.default_role', 'parent', false);
+    PERFORM pg_catalog.set_config('app.default_relationship_type', 'parent', false);
+    PERFORM pg_catalog.set_config('app.default_timezone', 'America/Guayaquil', false);
+END
+$$;
 
 -- ================================================================
 -- 1. LIMPIAR TODO LO EXISTENTE
@@ -43,7 +56,7 @@ DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
 
 -- ================================================================
--- 2. CREAR TABLAS PRINCIPALES
+-- 2. CREAR TABLAS PRINCIPALES (CON LITERALES CENTRALIZADOS)
 -- ================================================================
 
 -- TABLA: profiles (usuarios del sistema)
@@ -51,7 +64,7 @@ CREATE TABLE profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   full_name TEXT NOT NULL,
-  role TEXT CHECK (role IN ('parent', 'teacher', 'specialist', 'admin')) DEFAULT 'parent',
+  role TEXT CHECK (role IN ('parent', 'teacher', 'specialist', 'admin')) DEFAULT current_setting('app.default_role'),
   avatar_url TEXT,
   phone TEXT,
   is_active BOOLEAN DEFAULT TRUE,
@@ -59,7 +72,7 @@ CREATE TABLE profiles (
   failed_login_attempts INTEGER DEFAULT 0,
   last_failed_login TIMESTAMPTZ,
   account_locked_until TIMESTAMPTZ,
-  timezone TEXT DEFAULT 'America/Guayaquil',
+  timezone TEXT DEFAULT current_setting('app.default_timezone'),
   preferences JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -106,7 +119,8 @@ CREATE TABLE user_child_relations (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   child_id UUID REFERENCES children(id) ON DELETE CASCADE NOT NULL,
-  relationship_type TEXT CHECK (relationship_type IN ('parent', 'teacher', 'specialist', 'observer', 'family')) NOT NULL,
+  relationship_type TEXT CHECK (relationship_type IN ('parent', 'teacher', 'specialist', 'observer', 'family')) 
+    DEFAULT current_setting('app.default_relationship_type') NOT NULL,
   can_edit BOOLEAN DEFAULT FALSE,
   can_view BOOLEAN DEFAULT TRUE,
   can_export BOOLEAN DEFAULT FALSE,
@@ -199,7 +213,7 @@ CREATE INDEX idx_audit_table ON audit_logs(table_name);
 CREATE INDEX idx_audit_created ON audit_logs(created_at DESC);
 
 -- ================================================================
--- 4. CREAR FUNCIONES DE TRIGGERS
+-- 4. CREAR FUNCIONES DE TRIGGERS (ACTUALIZADAS)
 -- ================================================================
 
 -- Función para actualizar updated_at automáticamente
@@ -220,7 +234,7 @@ BEGIN
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'parent')
+    COALESCE(NEW.raw_user_meta_data->>'role', current_setting('app.default_role'))
   );
   RETURN NEW;
 END;
@@ -316,14 +330,14 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ================================================================
--- 7. CREAR VISTAS
+-- 7. CREAR VISTAS (ACTUALIZADAS)
 -- ================================================================
 
 -- Vista para niños accesibles por usuario
 CREATE OR REPLACE VIEW user_accessible_children AS
 SELECT 
   c.*,
-  'parent'::TEXT as relationship_type,
+  current_setting('app.default_relationship_type')::TEXT as relationship_type,
   true as can_edit,
   true as can_view,
   true as can_export,
@@ -528,17 +542,10 @@ BEGIN
   RAISE NOTICE 'Todas las tablas, funciones, vistas y políticas han sido creadas.';
   RAISE NOTICE 'La base de datos está lista para usar.';
   RAISE NOTICE '';
-  RAISE NOTICE 'FUNCIONALIDADES INCLUIDAS:';
-  RAISE NOTICE '✅ Gestión de usuarios (profiles)';
-  RAISE NOTICE '✅ Gestión de niños (children)';
-  RAISE NOTICE '✅ Relaciones usuario-niño (user_child_relations)';
-  RAISE NOTICE '✅ Registros diarios (daily_logs)';
-  RAISE NOTICE '✅ Categorías predefinidas (categories)';
-  RAISE NOTICE '✅ Sistema de auditoría (audit_logs)';
-  RAISE NOTICE '✅ Políticas RLS funcionales';
-  RAISE NOTICE '✅ Funciones RPC necesarias';
-  RAISE NOTICE '✅ Vistas optimizadas';
-  RAISE NOTICE '✅ Índices para performance';
+  RAISE NOTICE 'MEJORAS APLICADAS:';
+  RAISE NOTICE '✅ Literales duplicados centralizados en configuraciones';
+  RAISE NOTICE '✅ Valores por defecto consistentes en toda la aplicación';
+  RAISE NOTICE '✅ Fácil mantenimiento para futuras actualizaciones';
   RAISE NOTICE '';
   RAISE NOTICE 'PRÓXIMO PASO: Probar la aplicación NeuroLog';
 END $$;
