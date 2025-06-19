@@ -35,24 +35,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useChildren } from '@/hooks/use-children';
 import { useLogs } from '@/hooks/use-logs';
-import { supabase, uploadFile, getPublicUrl, STORAGE_BUCKETS } from '@/lib/supabase';
+import { supabase, uploadFile, getPublicUrl,  } from '@/lib/supabase';
 import type { 
   DailyLog, 
   LogInsert, 
   LogUpdate, 
   Category, 
-  IntensityLevel,
   LogAttachment,
-  ChildWithRelation
 } from '@/types';
 import { 
-  CalendarIcon, 
   ImageIcon, 
   PlusIcon, 
   TrashIcon, 
   SaveIcon,
-  HeartIcon,
-  AlertTriangleIcon,
   EyeIcon,
   EyeOffIcon,
   TagIcon,
@@ -63,7 +58,6 @@ import {
   UploadIcon
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 // ================================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -116,19 +110,19 @@ interface LogFormProps {
 }
 
 interface MoodSelectorProps {
-  value?: number;
-  onChange: (value: number | undefined) => void;
+  readonly value?: number;
+  readonly onChange: (value: number | undefined) => void;
 }
 
 interface AttachmentsManagerProps {
-  attachments: LogAttachment[];
-  onChange: (attachments: LogAttachment[]) => void;
-  childId: string;
+  readonly attachments: LogAttachment[];
+  readonly onChange: (attachments: LogAttachment[]) => void;
+  readonly childId: string;
 }
 
 interface TagsInputProps {
-  tags: string[];
-  onChange: (tags: string[]) => void;
+  readonly tags: string[];
+  readonly onChange: (tags: string[]) => void;
 }
 
 // ================================================================
@@ -199,11 +193,10 @@ function AttachmentsManager({ attachments, onChange, childId }: AttachmentsManag
       const newAttachments: LogAttachment[] = [];
 
       for (const file of Array.from(files)) {
-        const fileExt = file.name.split('.').pop();
         const fileName = `${childId}/${Date.now()}-${file.name}`;
         
-        await uploadFile('attachments', fileName, file);
-        const url = getPublicUrl('attachments', fileName);
+        await uploadFile('ATTACHMENTS', file, fileName);
+        const url = getPublicUrl('ATTACHMENTS', fileName);
         
         let type: LogAttachment['type'] = 'document';
         if (file.type.startsWith('image/')) type = 'image';
@@ -394,7 +387,6 @@ function TagsInput({ tags, onChange }: TagsInputProps) {
 // ================================================================
 
 export default function LogForm({ log, childId, mode, onSuccess, onCancel }: LogFormProps) {
-  const { user } = useAuth();
   const { children } = useChildren();
   const { createLog, updateLog } = useLogs();
   const [categories, setCategories] = useState<Category[]>([]);

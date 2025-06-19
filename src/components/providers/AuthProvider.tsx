@@ -13,7 +13,6 @@ import React, {
   useCallback,
   useMemo 
 } from 'react';
-import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase';
 import type { Profile, UserRole } from '@/types';
 
@@ -42,7 +41,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // ================================================================
 
 interface AuthProviderProps {
-  children: ReactNode;
+  readonly children: ReactNode;
 }
 
 // ================================================================
@@ -95,18 +94,18 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
         
         if (authUser?.user && !authError) {
           const userData = authUser.user;
-          const fullName = userData.user_metadata?.full_name || 
-                          userData.user_metadata?.name ||
-                          userData.email?.split('@')[0] || 
+          const fullName = userData.user_metadata?.full_name ?? 
+                          userData.user_metadata?.name ??
+                          userData.email?.split('@')[0] ?? 
                           'Usuario';
           
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert({
               id: userId,
-              email: userData.email || '',
+              email: userData.email ?? '',
               full_name: fullName,
-              role: userData.user_metadata?.role || 'parent',
+              role: userData.user_metadata?.role ?? 'parent',
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             })
@@ -420,7 +419,6 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       return subscription;
     };
 
-    //  INICIALIZAR TODO
     initializeAuth();
     setupAuthListener();
 

@@ -10,7 +10,7 @@ import { createBrowserClient } from '@supabase/ssr'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl ?? !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
@@ -114,8 +114,8 @@ export function handleSupabaseError(error: any): SupabaseError {
 }
 
 export function isAuthError(error: any): boolean {
-  return error?.message?.includes('Invalid login credentials') ||
-         error?.message?.includes('Email not confirmed') ||
+  return error?.message?.includes('Invalid login credentials') ??
+         error?.message?.includes('Email not confirmed') ??
          error?.message?.includes('User not found')
 }
 

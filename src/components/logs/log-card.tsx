@@ -17,6 +17,7 @@ interface LogWithDetails {
   mood_score: number | null
   intensity_level: 'low' | 'medium' | 'high'
   log_date: string
+  category_id: string | null
   created_at: string
   child_name: string
   category_name: string | null
@@ -26,7 +27,7 @@ interface LogWithDetails {
 }
 
 interface LogCardProps {
-  log: LogWithDetails
+  readonly log: LogWithDetails
 }
 
 export function LogCard({ log }: LogCardProps) {
@@ -38,7 +39,7 @@ export function LogCard({ log }: LogCardProps) {
     high: { label: 'Alta', color: 'bg-red-100 text-red-800' }
   }
 
-  const moodStars = log.mood_score ? [...Array(5)].map((_, i) => (
+  const moodStars = log.mood_score ? [...Array(5)].map((i) => (
     <Star
       key={i}
       className={`h-3 w-3 ${

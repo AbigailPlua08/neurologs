@@ -250,8 +250,8 @@ function MedicalInfoForm({ medicalInfo, onChange }: MedicalInfoFormProps) {
   const ItemsList = ({ field, items, placeholder }: { field: string, items: string[], placeholder: string }) => (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
-        {items.map((item) => (
-          <Badge key={item} variant="secondary" className="text-sm">
+        {items.map((item, index) => (
+          <Badge key={index} variant="secondary" className="text-sm">
             {item}
             <Button
               type="button"
@@ -869,7 +869,7 @@ export default function ChildForm({ child, mode, onSuccess, onCancel }: ChildFor
                 <EmergencyContactForm
                   contacts={form.watch('emergency_contact').map(contact => ({
                     ...contact,
-                    id: contact.name ?? crypto.randomUUID(), // Genera un ID si no existe
+                    id: contact.id || crypto.randomUUID(), // Genera un ID si no existe
                   }))}
                   onChange={(contacts) => form.setValue('emergency_contact', contacts)}
                 />
